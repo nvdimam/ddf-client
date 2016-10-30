@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="ddf-client:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="ddf-client.war">
+      <element id="artifact" artifact-name="ddf-client:war exploded" />
+    </root>
+  </artifact>
+</component>

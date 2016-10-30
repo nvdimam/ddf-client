@@ -1,0 +1,27 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="ddf-client:war exploded">
+    <output-path>$PROJECT_DIR$/target/ddf-client</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="ddf-client" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: it.sauronsoftware.cron4j:cron4j:2.2.5" />
+          <element id="library" level="project" name="Maven: com.ddfplus.jaws:ddfplus-api:1.0.10" />
+          <element id="library" level="project" name="Maven: org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk:1.12" />
+          <element id="library" level="project" name="Maven: com.squareup.okhttp:okhttp:2.5.0" />
+          <element id="library" level="project" name="Maven: com.squareup.okio:okio:1.6.0" />
+          <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.3.1" />
+          <element id="library" level="project" name="Maven: javax.servlet:javax.servlet-api:3.1.0" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.21" />
+          <element id="library" level="project" name="Maven: joda-time:joda-time:2.9.4" />
+        </element>
+      </element>
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/target/ddf-client/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="javaee-facet-resources" facet="ddf-client/web/Web" />
+    </root>
+  </artifact>
+</component>
