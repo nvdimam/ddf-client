@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="com.ddfplus.db.Quote" table="barchart_quote">
+        <meta attribute="class-description">
+            This class contains the ddfplus Quote detail.
+        </meta>
+        <id name="LastUpdated" type="long" column="id">
+            <generator class="native"/>
+        </id>
+        <component name="SymbolInfo" class="com.ddfplus.db.SymbolInfo">
+            <property column="symbol" name="Symbol" />
+            <property column="name" name="Name" />
+            <property column="exchange" name="Exchange" />
+            <property column="basecode" name="BaseCode" />
+		    <property column="pointvalue" name="PointValue" />
+		    <property column="tickincrement" name="TickIncrement" />
+	    </component>
+        <property column="ddfexchange" name="DDFExchange" />
+        <property column="bid" name="Bid" />
+        <property column="bidsize" name="BidSize" />
+        <property column="ask" name="Ask" />
+        <property column="asksize" name="AskSize" />
+    </class>
+</hibernate-mapping>

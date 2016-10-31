@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="MySQL - commo_index@commodity-index.cijja8eqmx0l.eu-west-1.rds.amazonaws.com">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="2.6">
+    <schema id="1" name="commo_index">
+      <visible>1</visible>
+    </schema>
+    <schema id="2" name="information_schema"/>
+    <schema id="3" name="innodb"/>
+    <schema id="4" name="mysql"/>
+    <schema id="5" name="performance_schema"/>
+    <schema id="6" name="sys"/>
+    <schema id="7" name="tmp"/>
+    <table id="8" parent="1" name="barchart_history_minute"/>
+    <table id="9" parent="1" name="barchart_history_tick"/>
+    <table id="10" parent="1" name="barchart_quote"/>
+    <column id="11" parent="8" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="12" parent="8" name="DATE_TIME">
+      <mandatory>1</mandatory>
+      <data-type>datetime|0</data-type>
+      <default-expression>&apos;0000-00-00 00:00:00&apos;</default-expression>
+    </column>
+    <column id="13" parent="8" name="TRADING_DAY">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <default-expression>&apos;0&apos;</default-expression>
+    </column>
+    <column id="14" parent="8" name="OPEN">
+      <mandatory>1</mandatory>
+      <data-type>double|0</data-type>
+      <default-expression>&apos;0&apos;</default-expression>
+    </column>
+    <column id="15" parent="8" name="HIGH">
+      <mandatory>1</mandatory>
+      <data-type>double|0</data-type>
+      <default-expression>&apos;0&apos;</default-expression>
+    </column>
+    <column id="16" parent="8" name="LOW">
+      <mandatory>1</mandatory>
+      <data-type>double|0</data-type>
+      <default-expression>&apos;0&apos;</default-expression>
+    </column>
+    <column id="17" parent="8" name="CLODE">
+      <mandatory>1</mandatory>
+      <data-type>double|0</data-type>
+      <default-expression>&apos;0&apos;</default-expression>
+    </column>
+    <column id="18" parent="8" name="VOLUME">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <default-expression>&apos;0&apos;</default-expression>
+    </column>
+    <key id="19" parent="8" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="20" parent="9" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="21" parent="9" name="DATE_TIME">
+      <data-type>datetime|0</data-type>
+    </column>
+    <column id="22" parent="9" name="TRADING_DAY">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="23" parent="9" name="SESSION_CODE">
+      <data-type>char(1)|0</data-type>
+    </column>
+    <column id="24" parent="9" name="PRICE">
+      <data-type>double|0</data-type>
+    </column>
+    <column id="25" parent="9" name="SIZE">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <key id="26" parent="9" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="27" parent="10" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="28" parent="10" name="symbol">
+      <data-type>varchar(16)|0</data-type>
+    </column>
+    <column id="29" parent="10" name="name">
+      <data-type>varchar(50)|0</data-type>
+    </column>
+    <column id="30" parent="10" name="exchange">
+      <data-type>varchar(50)|0</data-type>
+    </column>
+    <column id="31" parent="10" name="basecode">
+      <data-type>char(1)|0</data-type>
+    </column>
+    <column id="32" parent="10" name="pointvalue">
+      <data-type>double|0</data-type>
+    </column>
+    <column id="33" parent="10" name="tickincrement">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="34" parent="10" name="ddfexchange">
+      <data-type>char(1)|0</data-type>
+    </column>
+    <column id="35" parent="10" name="lastupdate">
+      <data-type>datetime|0</data-type>
+    </column>
+    <column id="36" parent="10" name="bid">
+      <data-type>double|0</data-type>
+    </column>
+    <column id="37" parent="10" name="ask">
+      <data-type>double|0</data-type>
+    </column>
+    <column id="38" parent="10" name="bidsize">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="39" parent="10" name="asksize">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <key id="40" parent="10" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+  </database-model>
+</dataSource>

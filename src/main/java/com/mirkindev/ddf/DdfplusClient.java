@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.ddfplus.api.*;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -476,8 +478,26 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     private class ClientQuoteHandler implements QuoteHandler {
 
+        private Session session;
+        private int counter ;
+
+        public ClientQuoteHandler(){
+            SessionFactory sf = HibernateUtil.getSessionFactory();
+            Session session = sf.openSession();
+            session.beginTransaction();
+            counter = 0;
+        }
+
+
         @Override
         public void onQuote(Quote quote) {
+
+            session.save(quote);
+            if(counter >= 50){
+                session.flush();
+                session.clear();
+                counter = 0;
+            }
 
             if (logQuote) {
                 log.info("QUOTE: " + quote.toXMLNode().toXMLString());
