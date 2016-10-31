@@ -26,7 +26,9 @@ public class ExecutionServlet extends HttpServlet {
         ServletContext context = getServletContext();
         // Retrieves the scheduler.
         Scheduler scheduler = (Scheduler) context.getAttribute(Constants.SCHEDULER);
+
         // Retrieves the executors.
+        /*
         TaskExecutor[] executors = scheduler.getExecutingTasks();
         // Registers the executors in the request.
         req.setAttribute("executors", executors);
@@ -53,13 +55,14 @@ public class ExecutionServlet extends HttpServlet {
                     && executor.canBeStopped() && !executor.isStopped()) {
                 executor.stop();
             }
-        }
+        }*/
         // Layout.
         String page = "/index.jsp";
         RequestDispatcher dispatcher = req.getRequestDispatcher(page);
         dispatcher.include(req, resp);
     }
 
+    /*
     private TaskExecutor find(TaskExecutor[] executors, String id) {
         if (id == null) {
             return null;
@@ -71,6 +74,6 @@ public class ExecutionServlet extends HttpServlet {
             }
         }
         return null;
-    }
+    }*/
 
 }

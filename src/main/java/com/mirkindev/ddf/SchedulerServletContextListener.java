@@ -26,6 +26,7 @@ import it.sauronsoftware.cron4j.TaskCollector;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.util.Properties;
 
 /**
  * This listener starts a scheduler bounded to the web application: the
@@ -44,7 +45,11 @@ public class SchedulerServletContextListener implements ServletContextListener {
 
         //0. Create DdfClient
         try {
-            DdfplusClient client = DdfplusClient.createClient();
+            Properties p = new Properties();
+            p.load(context.getResourceAsStream("/WEB-INF/client.properties"));
+
+            DdfplusClient client = DdfplusClient.createClient(p);
+            client.start();
             context.setAttribute(Constants.DDF_CLIENT, client);
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,6 +68,7 @@ public class SchedulerServletContextListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
+
         ServletContext context = event.getServletContext();
         // 1. Retrieves the scheduler from the context.
         Scheduler scheduler = (Scheduler) context.getAttribute(Constants.SCHEDULER);
@@ -70,6 +76,9 @@ public class SchedulerServletContextListener implements ServletContextListener {
         context.removeAttribute(Constants.SCHEDULER);
         // 3. Stops the scheduler.
         scheduler.stop();
+
+        DdfplusClient client = (DdfplusClient)context.getAttribute(Constants.DDF_CLIENT);
+        client.shutdown();
     }
 
 }

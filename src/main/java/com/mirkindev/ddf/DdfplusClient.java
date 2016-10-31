@@ -1,15 +1,8 @@
 package com.mirkindev.ddf;
 
-/**
- * Copyright (C) 2004 - 2015 by Barchart.com, Inc. All Rights Reserved.
- *
- * This software is the proprietary information of Barchart.com, Inc.
- * Use is subject to license terms.
- */
-
-
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,18 +12,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.ddfplus.api.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ddfplus.api.BookQuoteHandler;
-import com.ddfplus.api.ClientConfig;
-import com.ddfplus.api.ConnectionEvent;
-import com.ddfplus.api.ConnectionEventHandler;
-import com.ddfplus.api.FeedHandler;
-import com.ddfplus.api.MarketEventHandler;
-import com.ddfplus.api.QuoteHandler;
-import com.ddfplus.api.TimestampHandler;
 import com.ddfplus.db.BookQuote;
 import com.ddfplus.db.MarketEvent;
 import com.ddfplus.db.Quote;
@@ -75,6 +61,8 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     private Map<String, List<BookQuoteHandler>> depthHandlers = new HashMap<String, List<BookQuoteHandler>>();
 
+    ConnectionEventType lastEvent;
+
     // log modes
     private boolean logTS;
     private boolean logQuote;
@@ -88,25 +76,18 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     private MessageStore messageStore;
 
-    public static DdfplusClient createClient() throws Exception {
+    public static DdfplusClient createClient(Properties p) throws Exception {
 
         System.out.println("Creating DdfplusClient" );
 
         ClientConfig config = new ClientConfig();
 
-        String propFile = CLIENT_PROPS_FILE;
-
 		/*
 		 * Check for properties in the current directory, if arguments not used.
 		 *
 		 */
-        Properties p = null;
-        File f = new File(propFile);
-        if (f.exists() && config.getUserName() == null && config.getPassword() == null
-                && (config.getSymbols() == null || config.getExchangeCodes() == null)) {
-            System.out.println("\nReading DDF Client properties file: " + f);
-            p = new Properties();
-            p.load(new FileReader(f));
+        if (p != null) {
+            System.out.println("\nReading DDF Client properties file");
             if (p.getProperty("username") != null && !p.getProperty("username").isEmpty()) {
                 config.setUserName(p.getProperty("username"));
             }
@@ -137,7 +118,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
                 config.setServerPort(Integer.parseInt(p.getProperty("server.port")));
             }
             if (p.getProperty("depthSubscriptions") != null && !p.getProperty("depthSubscriptions").isEmpty()) {
-                config.setDepthSubscription(p.getProperty("depthSubscriptions").equals("true") ? true : false);
+                config.setDepthSubscription(p.getProperty("depthSubscriptions").equals("true") );
             }
             if (p.getProperty("snapshotUser") != null && !p.getProperty("snapshotUser").isEmpty()) {
                 config.setSnapshotUser(p.getProperty("snapshotUser"));
@@ -146,7 +127,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
                 config.setSnapshotPassword(p.getProperty("snapshotPassword"));
             }
             if (p.getProperty("storeMessages") != null && !p.getProperty("storeMessages").isEmpty()) {
-                config.setStoreMessages(p.getProperty("storeMessages").equals("true") ? true : false);
+                config.setStoreMessages(p.getProperty("storeMessages").equals("true") );
             }
             if (p.getProperty("definitionRefreshIntervalSec") != null
                     && !p.getProperty("definitionRefreshIntervalSec").isEmpty()) {
@@ -306,6 +287,9 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
      */
     @Override
     public void onEvent(ConnectionEvent event) {
+
+        lastEvent = event.getType();
+
         switch (event.getType()) {
             case CONNECTED:
                 log.info(event.toString());
@@ -383,6 +367,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
     private void stopSubscriptions() {
 
         // remove subscriptions from the Client
+
 
         // Depth
         Set<String> mdSymbols = depthHandlers.keySet();
@@ -493,6 +478,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
         @Override
         public void onQuote(Quote quote) {
+
             if (logQuote) {
                 log.info("QUOTE: " + quote.toXMLNode().toXMLString());
             }
