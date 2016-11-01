@@ -1,5 +1,7 @@
 package com.mirkindev.ddf;
 
+import com.ddfplus.db.Quote;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -7,21 +9,41 @@ import java.sql.Timestamp;
  * Created by dimam on 31/10/2016.
  */
 @Entity
-@Table(name = "barchart_quote", schema = "commo_index", catalog = "")
+@Table(name = "barchart_quote", schema = "commo_index" )
 public class BarchartQuoteEntity {
     private int id;
     private String symbol;
     private String name;
     private String exchange;
     private String basecode;
-    private Double pointvalue;
+    private Float pointvalue;
     private Integer tickincrement;
     private String ddfexchange;
     private Timestamp lastupdate;
-    private Double bid;
-    private Double ask;
+    private Float bid;
+    private Float ask;
     private Integer bidsize;
     private Integer asksize;
+
+    public BarchartQuoteEntity()
+    {
+
+    }
+
+    public BarchartQuoteEntity(Quote q) {
+        symbol = q.getSymbolInfo().getSymbol();
+        name = q.getSymbolInfo().getName();
+        exchange = q.getSymbolInfo().getExchange();
+        basecode = Character.toString(q.getSymbolInfo().getBaseCode());
+        pointvalue = q.getSymbolInfo().getPointValue();
+        tickincrement = q.getSymbolInfo().getTickIncrement();
+        ddfexchange = q.getDDFExchange();
+        lastupdate = new Timestamp(q.getLastUpdated());
+        bid = q.getBid();
+        ask = q.getAsk();
+        bidsize = q.getBidSize();
+        asksize = q.getAskSize();
+    }
 
     @Id
     @Column(name = "id")
@@ -75,11 +97,11 @@ public class BarchartQuoteEntity {
 
     @Basic
     @Column(name = "pointvalue")
-    public Double getPointvalue() {
+    public Float getPointvalue() {
         return pointvalue;
     }
 
-    public void setPointvalue(Double pointvalue) {
+    public void setPointvalue(Float pointvalue) {
         this.pointvalue = pointvalue;
     }
 
@@ -115,21 +137,21 @@ public class BarchartQuoteEntity {
 
     @Basic
     @Column(name = "bid")
-    public Double getBid() {
+    public Float getBid() {
         return bid;
     }
 
-    public void setBid(Double bid) {
+    public void setBid(Float bid) {
         this.bid = bid;
     }
 
     @Basic
     @Column(name = "ask")
-    public Double getAsk() {
+    public Float getAsk() {
         return ask;
     }
 
-    public void setAsk(Double ask) {
+    public void setAsk(Float ask) {
         this.ask = ask;
     }
 

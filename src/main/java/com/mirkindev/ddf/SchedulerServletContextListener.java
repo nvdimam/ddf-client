@@ -49,21 +49,21 @@ public class SchedulerServletContextListener implements ServletContextListener {
             p.load(context.getResourceAsStream("/WEB-INF/client.properties"));
 
             DdfplusClient client = DdfplusClient.createClient(p);
-            client.start();
             context.setAttribute(Constants.DDF_CLIENT, client);
+
+            // 1. Creates the scheduler.
+            Scheduler scheduler = new Scheduler();
+            // 2. Registers a custom task collector.
+            TaskCollector collector = new BarchartDdfTaskCollector(client);
+            //TaskCollector collector = new MyTaskCollector();
+            scheduler.addTaskCollector(collector);
+            // 3. Starts the scheduler.
+            scheduler.start();
+            // 4. Registers the scheduler.
+            context.setAttribute(Constants.SCHEDULER, scheduler);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // 1. Creates the scheduler.
-        Scheduler scheduler = new Scheduler();
-        // 2. Registers a custom task collector.
-        TaskCollector collector = new BarchartDdfTaskCollector();
-        scheduler.addTaskCollector(collector);
-        // 3. Starts the scheduler.
-        scheduler.start();
-        // 4. Registers the scheduler.
-        context.setAttribute(Constants.SCHEDULER, scheduler);
     }
 
     @Override

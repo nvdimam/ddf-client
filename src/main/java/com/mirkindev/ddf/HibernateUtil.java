@@ -1,6 +1,5 @@
 package com.mirkindev.ddf;
 
-import com.ddfplus.db.Quote;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 

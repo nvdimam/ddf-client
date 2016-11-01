@@ -15,6 +15,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.ddfplus.api.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
+import org.hibernate.Transaction;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,8 +65,6 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     private Map<String, List<BookQuoteHandler>> depthHandlers = new HashMap<String, List<BookQuoteHandler>>();
 
-    ConnectionEventType lastEvent;
-
     // log modes
     private boolean logTS;
     private boolean logQuote;
@@ -76,7 +76,16 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
     private FeedHandlerImpl feedHandler;
     private MarketEventHandlerImpl marketEventHandler;
 
+    /* Stroe Properties */
     private MessageStore messageStore;
+    Transaction tx = null;
+    StatelessSession session = null;
+    int qcount;
+
+    /* Some Data*/
+    ConnectionEventType connectionStatus;
+
+
 
     public static DdfplusClient createClient(Properties p) throws Exception {
 
@@ -275,6 +284,14 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     public void shutdown() {
         client.disconnect();
+
+        if(tx != null) {
+            tx.commit();
+        }
+        if(session != null){
+            session.close();
+        }
+
         if (messageStore != null) {
             messageStore.close();
         }
@@ -290,13 +307,14 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
     @Override
     public void onEvent(ConnectionEvent event) {
 
-        lastEvent = event.getType();
+        connectionStatus = event.getType();
 
         switch (event.getType()) {
             case CONNECTED:
                 log.info(event.toString());
                 break;
             case DISCONNECTED:
+                stopSubscriptions();
                 log.error(event.toString());
                 break;
             case CONNECTION_FAILED:
@@ -363,13 +381,8 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     }
 
-    /*
-     * An example of how to remove subscriptions.
-     */
+
     private void stopSubscriptions() {
-
-        // remove subscriptions from the Client
-
 
         // Depth
         Set<String> mdSymbols = depthHandlers.keySet();
@@ -421,10 +434,14 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
             return;
         }
 
+        SessionFactory sf = HibernateUtil.getSessionFactory();
+        session = sf.openStatelessSession();
+        tx = session.beginTransaction();
+
         String[] symbols = config.getSymbols().split(",");
         for (String symbol : symbols) {
             // Market Quote/BBO
-            QuoteHandler handler = new ClientQuoteHandler();
+            ClientQuoteHandler handler = new ClientQuoteHandler();
             List<QuoteHandler> l = quoteHandlers.get(symbol);
             if (l == null) {
                 l = new CopyOnWriteArrayList<QuoteHandler>();
@@ -433,6 +450,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
             l.add(handler);
             // This will request quotes if client does not have a subscription
             // to the symbol
+
             client.addQuoteHandler(symbol, handler);
         }
 
@@ -478,30 +496,22 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     private class ClientQuoteHandler implements QuoteHandler {
 
-        private Session session;
-        private int counter ;
-
-        public ClientQuoteHandler(){
-            SessionFactory sf = HibernateUtil.getSessionFactory();
-            Session session = sf.openSession();
-            session.beginTransaction();
-            counter = 0;
-        }
-
-
         @Override
         public void onQuote(Quote quote) {
 
-            session.save(quote);
-            if(counter >= 50){
-                session.flush();
-                session.clear();
-                counter = 0;
-            }
-
+            session.insert(new BarchartQuoteEntity(quote));
+            qcount++;
             if (logQuote) {
                 log.info("QUOTE: " + quote.toXMLNode().toXMLString());
             }
+            if(qcount >= 50) {
+                synchronized (tx) {
+                    tx.commit();
+                    tx = session.beginTransaction();
+                    qcount = 0;
+                }
+            }
+
         }
 
     }

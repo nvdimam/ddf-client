@@ -30,7 +30,18 @@ import it.sauronsoftware.cron4j.TaskTable;
  */
 public class MyTaskCollector implements TaskCollector {
 
+    @Override
     public TaskTable getTasks() {
-        return new TaskTable();
+
+        SchedulingPattern patternStart = new SchedulingPattern("* * * * 1,2,3,4,5,6");
+        SchedulingPattern patternEnd = new SchedulingPattern("* * * * 1,2,3,4,5,6");
+        TaskTable ret = new TaskTable();
+
+        Task taskSubscribeStart = new MyTask("Start");
+        Task taskSubscribeEnd = new MyTask("End");
+
+        ret.add(patternStart, taskSubscribeStart);
+        ret.add(patternEnd, taskSubscribeEnd);
+        return ret;
     }
 }
