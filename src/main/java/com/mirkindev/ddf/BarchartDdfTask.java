@@ -10,11 +10,11 @@ public class BarchartDdfTask  extends Task {
 
     public enum TaskOperation { START_SUBSCRIPTION, END_SUBSCRIPTION }
 
-    private DdfplusClient client;
+    private BarchartQuoteService client;
     private TaskOperation operation;
 
 
-    public BarchartDdfTask(DdfplusClient client, TaskOperation operation){
+    public BarchartDdfTask(BarchartQuoteService client, TaskOperation operation){
         this.client = client;
         this.operation = operation;
     }
@@ -26,11 +26,13 @@ public class BarchartDdfTask  extends Task {
             case START_SUBSCRIPTION:
                 try {
                     client.start();
+                    client.setShouldRun(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
             case END_SUBSCRIPTION:
+                client.setShouldRun(false);
                 client.shutdown();
                 break;
         }

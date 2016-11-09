@@ -22,11 +22,14 @@ package com.mirkindev.ddf;
 
 import it.sauronsoftware.cron4j.Scheduler;
 import it.sauronsoftware.cron4j.TaskCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.util.Properties;
+import java.util.TimeZone;
 
 /**
  * This listener starts a scheduler bounded to the web application: the
@@ -38,24 +41,28 @@ import java.util.Properties;
  */
 public class SchedulerServletContextListener implements ServletContextListener {
 
+    private static final Logger log = LoggerFactory.getLogger(SchedulerServletContextListener.class);
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
         ServletContext context = event.getServletContext();
-
         //0. Create DdfClient
         try {
             Properties p = new Properties();
             p.load(context.getResourceAsStream("/WEB-INF/client.properties"));
 
-            DdfplusClient client = DdfplusClient.createClient(p);
+            BarchartQuoteService client = BarchartQuoteService.createClient(p);
             context.setAttribute(Constants.DDF_CLIENT, client);
+
+            TimeZone tz = TimeZone.getTimeZone("CST");
+            log.debug("Setting Timezone :" + tz.toString());
 
             // 1. Creates the scheduler.
             Scheduler scheduler = new Scheduler();
+            scheduler.setTimeZone(TimeZone.getTimeZone("CST"));
+
             // 2. Registers a custom task collector.
             TaskCollector collector = new BarchartDdfTaskCollector(client);
-            //TaskCollector collector = new MyTaskCollector();
             scheduler.addTaskCollector(collector);
             // 3. Starts the scheduler.
             scheduler.start();
@@ -77,7 +84,7 @@ public class SchedulerServletContextListener implements ServletContextListener {
         // 3. Stops the scheduler.
         scheduler.stop();
 
-        DdfplusClient client = (DdfplusClient)context.getAttribute(Constants.DDF_CLIENT);
+        BarchartQuoteService client = (BarchartQuoteService)context.getAttribute(Constants.DDF_CLIENT);
         client.shutdown();
     }
 

@@ -1,5 +1,6 @@
 package com.mirkindev.ddf;
 
+import com.google.gson.Gson;
 import it.sauronsoftware.cron4j.Scheduler;
 import it.sauronsoftware.cron4j.TaskExecutor;
 
@@ -24,9 +25,12 @@ public class ExecutionServlet extends HttpServlet {
             throws ServletException, IOException {
         // Retrieves the servlet context.
         ServletContext context = getServletContext();
-        // Retrieves the scheduler.
-        Scheduler scheduler = (Scheduler) context.getAttribute(Constants.SCHEDULER);
 
+        BarchartQuoteService service = (BarchartQuoteService)context.getAttribute(Constants.DDF_CLIENT);
+        QuoteServiceInfo info = new QuoteServiceInfo(service);
+
+        // Retrieves the scheduler.
+        //Scheduler scheduler = (Scheduler) context.getAttribute(Constants.SCHEDULER);
         // Retrieves the executors.
         /*
         TaskExecutor[] executors = scheduler.getExecutingTasks();
@@ -57,9 +61,28 @@ public class ExecutionServlet extends HttpServlet {
             }
         }*/
         // Layout.
-        String page = "/index.jsp";
-        RequestDispatcher dispatcher = req.getRequestDispatcher(page);
-        dispatcher.include(req, resp);
+        //String page = "/index.html";
+        //RequestDispatcher dispatcher = req.getRequestDispatcher(page);
+        //dispatcher.include(req, resp);
+
+        //request.setAttribute("data", data);
+        //req.getRequestDispatcher("/index.html").forward(req, resp);
+
+        String action = req.getParameter("op");
+        if("start".equals(action)){
+            try {
+                service.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }else if("stop".equals(action)){
+            service.shutdown();
+        }
+
+        String json = new Gson().toJson(info);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write(json);
     }
 
     /*

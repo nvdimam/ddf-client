@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="bower_components/kendo-ui/styles/kendo.common.min.css" rel="stylesheet">
+    <link href="bower_components/kendo-ui/styles/kendo.metro.min.css" rel="stylesheet">
+    <script src="bower_components/kendo-ui/js/jquery.min.js"></script>
+    <script src="bower_components/kendo-ui/js/kendo.core.min.js"></script>
+    <script src="bower_components/kendo-ui/js/kendo.button.min.js"></script>
+    <script src="bower_components/kendo-ui/js/kendo.data.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.5.7/chroma.min.js"></script>
+    <link href="assets/site.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!--open container-->
+        <div class="row row-offcanvas row-offcanvas-left">
+            <!--open row-->
+            <div id="nav-section" class="col-xs-12 column">
+                <!--open nav column-->
+                <div class="navbar-default">
+                    <button id="toggle-button" type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <h1 id="dash-logo" class="center-block">Northwind&#183;Dash</h1>
+                <div class="collapse navbar-collapse" id="sidebar-nav" role="navigation">
+                    <ul class="nav">
+                        <li id="regional-sales-status">
+                            <a href="index.html">
+                                <span class="icon icon-chart-column"></span>Service Status</a>
+                        </li>
+                        <li id="products-and-orders">
+                            <a href="products-orders.html">
+                                <span class="icon icon-star-empty"></span>Live Quotes</a>
+                        </li>
+                        <li id="team-efficiency">
+                            <a href="team-efficiency.html">
+                                <span class="icon icon-faves"></span>Live Commodities index</a>
+                        </li>
+                        <li id="about">
+                            <a href="about.html">
+                                <span class="icon icon-info"></span>About</a>
+                        </li>
+                    </ul>
+                    <div id="rights">
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+            <!--close left column-->
+            <div id="main-section" class="col-xs-12 column">
+                <!--open main column-->
+                <div id="main-section-header" class="row">
+                    <h2 class="col-xs-3">Service status</h2>
+                    <div style="clear:both;"></div>
+                </div>
+
+                <div  class="main-section-content row">
+                    <div class="row">
+                        <div>Connection Status</div>
+                        <div id="connection_status"></div>
+                        <div>Is Started</div>
+                        <div id="is_started"></div>
+                        <div>Quotes</div>
+                        <div id="quotes"></div>
+
+                        <div class="col-xs-12 column"><button id="btn_start" >Start</button><br /></div>
+                        <div class="col-xs-12 column"> <button id="btn_stop" >End</button></div>
+
+                    </div>
+
+                </div>
+            </div>
+            <!--close main column-->
+        </div>
+        <!--close row-->
+    </div>
+    <!--close container-->
+
+    <script>
+
+        function update(){
+            $.get({
+                url: "api",
+            }).done(function(data){
+                console.log(data);
+                $("#connection_status").html(data.connectionStatus);
+                $("#is_started").html(data.isStarted);
+            });
+        }
+
+        $(document).ready(function() {
+
+           update();
+
+
+            $("#btn_start").kendoButton({
+                click: function(){
+                    $.get({
+                        url: "api?op=start",
+                    }).done(function() {
+                        update();
+                    });
+                }
+            });
+
+            $("#btn_stop").kendoButton({
+                click: function(){
+                    $.get({
+                        url: "api?op=stop",
+                    }).done(function() {
+                        update();
+                    });
+                }
+            });
+
+        });
+    </script>
+</body>
+
+</html>

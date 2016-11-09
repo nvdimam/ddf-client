@@ -1,9 +1,5 @@
 package com.mirkindev.ddf;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.ddfplus.api.*;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
@@ -48,15 +43,15 @@ import com.ddfplus.util.StoreFeedHandler;
  * </ol>
  *
  */
-public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
+public class BarchartQuoteService implements ConnectionEventHandler, TimestampHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(DdfplusClient.class);
+    private static final Logger log = LoggerFactory.getLogger(BarchartQuoteService.class);
 
     private static final String CLIENT_PROPS_FILE = "client.properties";
 
     private final ClientConfig config;
     private SymbolProvider symbolProvider;
-    private final DdfClient client;
+    private DdfClient client;
 
     private Map<String, List<QuoteHandler>> quoteHandlers = new HashMap<String, List<QuoteHandler>>();
 
@@ -78,18 +73,35 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     /* Stroe Properties */
     private MessageStore messageStore;
-    Transaction tx = null;
-    StatelessSession session = null;
-    int qcount;
+    private Transaction tx = null;
+    private StatelessSession session = null;
+    private int qcount;
 
     /* Some Data*/
-    ConnectionEventType connectionStatus;
+    private ConnectionEventType connectionStatus = ConnectionEventType.DISCONNECTED;
+    private HashMap<String,BarchartQuoteEntity> lastQuotes = new  HashMap<String,BarchartQuoteEntity>();
+    private boolean isStarted = false;
+    private boolean shouldRun = false;
 
+    public void setShouldRun(boolean c){
+        this.shouldRun = c;
+    }
 
+    public ConnectionEventType getConnectionStatus() {
+        return connectionStatus;
+    }
 
-    public static DdfplusClient createClient(Properties p) throws Exception {
+    public HashMap<String, BarchartQuoteEntity> getLastQuotes() {
+        return lastQuotes;
+    }
 
-        System.out.println("Creating DdfplusClient" );
+    public boolean isStarted() {
+        return isStarted;
+    }
+
+    public static BarchartQuoteService createClient(Properties p) throws Exception {
+
+        System.out.println("Creating BarchartQuoteService" );
 
         ClientConfig config = new ClientConfig();
 
@@ -178,7 +190,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
         System.out.println("Starting DDF Client with " + config);
 
-        DdfplusClient client = new DdfplusClient(config);
+        BarchartQuoteService client = new BarchartQuoteService(config);
 
         ShutdownHook shutdownThread = new ShutdownHook(client);
         Runtime.getRuntime().addShutdownHook(shutdownThread);
@@ -188,15 +200,12 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     }
 
-    /**
-     * Prints out the basic help for this program, and how to use this program.
-     */
     public static void printHelp() {
 
         final StringBuilder text = new StringBuilder(1024);
 
         text.append("" + "Loads and runs the sample ddfplus client application.\n")
-                .append("Usage: java " + DdfplusClient.class.getCanonicalName())
+                .append("Usage: java " + BarchartQuoteService.class.getCanonicalName())
                 .append(" -u user -p password -sym symbols|-e exchangeCodes [-t TCP|HTTP|HTTPSTREAM|WSS][-s server] [-d] [-su user] [-sp password] [-l a,ts,d,me,q,qe,b] [-st] [-f <prop file namne>]");
         text.append("\n-u user             - User Name");
         text.append("\n-p password         - Password");
@@ -215,7 +224,7 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     }
 
-    private DdfplusClient(ClientConfig config) throws Exception {
+    private BarchartQuoteService(ClientConfig config) throws Exception {
 
         this.config = config;
         parseLogModes(config.getLogMode());
@@ -227,7 +236,11 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
             symbolProvider.setSymbols(config.getExchangeCodes());
         }
 
-		/*
+    }
+
+    public void start() throws Exception {
+
+         /*
 		 * Symbol provider is not required for the TCP or Web Socket transport,
 		 * it is required for the following ConnectionType transports:
 		 *
@@ -238,9 +251,9 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 		 */
         if (config.getConnectionType() == ConnectionType.TCP || config.getConnectionType() == ConnectionType.WS
                 || config.getConnectionType() == ConnectionType.WSS) {
-            client = new DdfClientImpl(config);
+            client = new DdfClientEx(config);
         } else {
-            client = new DdfClientImpl(config, symbolProvider);
+            client = new DdfClientEx(config, symbolProvider);
         }
 
 		/*
@@ -274,16 +287,15 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
         marketEventHandler = new MarketEventHandlerImpl();
         client.addMarketEventHandler(marketEventHandler);
 
-    }
-
-    public void start() throws Exception {
         // Will log in to DDF Server and start processing messages.
         client.connect();
-
+        isStarted = true;
     }
 
     public void shutdown() {
         client.disconnect();
+        client = null;
+
 
         if(tx != null) {
             tx.commit();
@@ -295,6 +307,8 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
         if (messageStore != null) {
             messageStore.close();
         }
+
+        isStarted = false;
     }
 
     /**
@@ -314,7 +328,14 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
                 log.info(event.toString());
                 break;
             case DISCONNECTED:
-                stopSubscriptions();
+                if(shouldRun){
+                    shutdown();
+                    try {
+                        start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 log.error(event.toString());
                 break;
             case CONNECTION_FAILED:
@@ -499,7 +520,10 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
         @Override
         public void onQuote(Quote quote) {
 
-            session.insert(new BarchartQuoteEntity(quote));
+            BarchartQuoteEntity item = new BarchartQuoteEntity(quote);
+            session.insert(item);
+            lastQuotes.put(item.getSymbol(),item);
+
             qcount++;
             if (logQuote) {
                 log.info("QUOTE: " + quote.toXMLNode().toXMLString());
@@ -548,9 +572,9 @@ public class DdfplusClient implements ConnectionEventHandler, TimestampHandler {
 
     private static class ShutdownHook extends Thread {
 
-        private DdfplusClient app;
+        private BarchartQuoteService app;
 
-        public ShutdownHook(DdfplusClient app) {
+        public ShutdownHook(BarchartQuoteService app) {
             this.app = app;
         }
 

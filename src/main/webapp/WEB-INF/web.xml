@@ -3,7 +3,7 @@
          xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
-  <display-name>cron4web</display-name>
+  <display-name>DDF-Quotes-Service</display-name>
 
   <!--
       This listener provides scheduler activation at application startup,
@@ -26,7 +26,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>ExecutionServlet</servlet-name>
-    <url-pattern>/</url-pattern>
+    <url-pattern>/api</url-pattern>
   </servlet-mapping>
 
 </web-app>

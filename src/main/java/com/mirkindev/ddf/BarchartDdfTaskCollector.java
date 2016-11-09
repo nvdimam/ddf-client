@@ -10,24 +10,26 @@ import it.sauronsoftware.cron4j.TaskTable;
  */
 public class BarchartDdfTaskCollector implements TaskCollector {
 
-    DdfplusClient client;
+    BarchartQuoteService client;
 
-    BarchartDdfTaskCollector(DdfplusClient client){
+    BarchartDdfTaskCollector(BarchartQuoteService client){
         this.client = client;
     }
 
     @Override
     public TaskTable getTasks() {
 
-        SchedulingPattern patternStart = new SchedulingPattern("00 13 * * 1,2,3,4,5,6");
-        SchedulingPattern patternEnd = new SchedulingPattern("00 17 * * 1,2,3,4,5,6");
+        SchedulingPattern patternStart1 = new SchedulingPattern("00 07 * * 0,1,2,3,4,5");
+        SchedulingPattern patternEnd1 = new SchedulingPattern("45 07 * * 0,1,2,3,4,5");
+        SchedulingPattern patternStart2 = new SchedulingPattern("30 08 * * 0,1,2,3,4,5");
+        SchedulingPattern patternEnd2 = new SchedulingPattern("00 12 * * 0,1,2,3,4,5");
         TaskTable ret = new TaskTable();
 
-        Task taskSubscribeStart = new BarchartDdfTask(client,BarchartDdfTask.TaskOperation.START_SUBSCRIPTION);
-        Task taskSubscribeEnd = new BarchartDdfTask(client, BarchartDdfTask.TaskOperation.END_SUBSCRIPTION);
+        ret.add(patternStart1, new BarchartDdfTask(client,BarchartDdfTask.TaskOperation.START_SUBSCRIPTION));
+        ret.add(patternEnd1, new BarchartDdfTask(client, BarchartDdfTask.TaskOperation.END_SUBSCRIPTION));
+        ret.add(patternStart2, new BarchartDdfTask(client,BarchartDdfTask.TaskOperation.START_SUBSCRIPTION));
+        ret.add(patternEnd2, new BarchartDdfTask(client, BarchartDdfTask.TaskOperation.END_SUBSCRIPTION));
 
-        ret.add(patternStart, taskSubscribeStart);
-        ret.add(patternEnd, taskSubscribeEnd);
         return ret;
     }
 }
